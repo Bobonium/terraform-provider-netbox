@@ -31,12 +31,17 @@ jobs:
         with:
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
-      -
-        name: Run GoReleaser
+
+      - name: Generate CHANGELOG for this version
+        run: ./utils/getChangelogRelease CHANGELOG.md $TAG > RELEASE_CHANGELOG.md
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+
+      - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2.2.1
         with:
           version: latest
-          args: release --rm-dist
+          args: release --rm-dist --release-notes=RELEASE_CHANGELOG.md
         env:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
